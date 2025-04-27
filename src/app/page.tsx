@@ -1,6 +1,25 @@
+"use client";
+
 import Image from "next/image";
+import { supabase } from "@/lib/supabase";
+import { useEffect, useState } from "react";
 
 export default function Home() {
+  const [questions, setQuestions] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchQuestions() {
+      const { data, error } = await supabase.from("questions").select("*");
+      if (error) {
+        setError(error.message);
+      } else {
+        setQuestions(data ?? []);
+      }
+    }
+    fetchQuestions();
+  }, []);
+
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
@@ -49,6 +68,19 @@ export default function Home() {
           >
             Read our docs
           </a>
+        </div>
+        <div className="mt-8 w-full">
+          <h2 className="text-lg font-bold mb-2">질문 리스트 (Supabase)</h2>
+          {error && <div className="text-red-500">에러: {error}</div>}
+          {questions.length === 0 && !error ? (
+            <div>로딩 중...</div>
+          ) : (
+            <ul className="list-disc pl-5">
+              {questions.map((q) => (
+                <li key={q.id}>{q.text}</li>
+              ))}
+            </ul>
+          )}
         </div>
       </main>
       <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
